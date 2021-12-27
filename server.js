@@ -87,7 +87,7 @@ async function run() {
         res.send(result);
       });
 
-    //post user , get users
+    //post user , get users ,get particular user by emailId
     app
       .post("/users", async (req, res) => {
         const user = req.body;
@@ -96,6 +96,12 @@ async function run() {
       })
       .get("/users", async (req, res) => {
         const result = await userCollection.find({}).toArray();
+        res.send(result);
+      })
+      .get("/users/:emailId", async (req, res) => {
+        const result = await userCollection.findOne({
+          email: req.params.emailId,
+        });
         res.send(result);
       });
   } finally {
