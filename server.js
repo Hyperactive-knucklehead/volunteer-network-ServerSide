@@ -62,7 +62,7 @@ async function run() {
         } else res.status(404).send("Event not found!");
       });
 
-    //post registration info , get all registration info
+    //post registration info , get all registration info, get particular registration info by emailId
     app
       .post("/registeredInfo", async (req, res) => {
         const registeredInfo = req.body;
@@ -71,6 +71,12 @@ async function run() {
       })
       .get("/registeredInfo", async (req, res) => {
         const result = await registeredCollection.find({}).toArray();
+        res.send(result);
+      })
+      .get("/registeredInfo/:emailId", async (req, res) => {
+        const result = await registeredCollection.findOne({
+          email: req.params.emailId,
+        });
         res.send(result);
       });
   } finally {
