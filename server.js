@@ -62,12 +62,17 @@ async function run() {
         } else res.status(404).send("Event not found!");
       });
 
-    //post registration info
-    app.post("/registeredInfo", async (req, res) => {
-      const registeredInfo = req.body;
-      const result = await registeredCollection.insertOne(registeredInfo);
-      res.send(result);
-    });
+    //post registration info , get all registration info
+    app
+      .post("/registeredInfo", async (req, res) => {
+        const registeredInfo = req.body;
+        const result = await registeredCollection.insertOne(registeredInfo);
+        res.send(result);
+      })
+      .get("/registeredInfo", async (req, res) => {
+        const result = await registeredCollection.find({}).toArray();
+        res.send(result);
+      });
   } finally {
     // await client.close();
   }
