@@ -23,12 +23,17 @@ async function run() {
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
 
-    //post an event
-    app.post("/events", async (req, res) => {
-      const event = req.body;
-      const result = await eventCollection.insertOne(event);
-      res.send(result);
-    });
+    //post an event , get events
+    app
+      .post("/events", async (req, res) => {
+        const event = req.body;
+        const result = await eventCollection.insertOne(event);
+        res.send(result);
+      })
+      .get("/events", async (req, res) => {
+        const result = await eventCollection.find({}).toArray();
+        res.send(result);
+      });
   } finally {
     // await client.close();
   }
