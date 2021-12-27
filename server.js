@@ -23,6 +23,7 @@ async function run() {
     await client.connect();
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
+    const registeredCollection = database.collection("registered");
 
     //post an event , get events , get particular event by id, delete particular event by id ,update particular event by id
     app
@@ -60,6 +61,13 @@ async function run() {
           res.send(result);
         } else res.status(404).send("Event not found!");
       });
+
+    //post registration info
+    app.post("/registeredInfo", async (req, res) => {
+      const registeredInfo = req.body;
+      const result = await registeredCollection.insertOne(registeredInfo);
+      res.send(result);
+    });
   } finally {
     // await client.close();
   }
