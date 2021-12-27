@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
 const { ObjectId } = require("mongodb");
+const { response } = require("express");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -24,6 +25,7 @@ async function run() {
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
     const registeredCollection = database.collection("registered");
+    const userCollection = database.collection("users");
 
     //post an event , get events , get particular event by id, delete particular event by id ,update particular event by id
     app
@@ -85,6 +87,13 @@ async function run() {
         });
         res.send(result);
       });
+
+    //post user
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
   } finally {
     // await client.close();
   }
