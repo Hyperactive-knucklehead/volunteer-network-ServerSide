@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
+const { ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -23,7 +24,7 @@ async function run() {
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
 
-    //post an event , get events
+    //post an event , get events , get particular event by id
     app
       .post("/events", async (req, res) => {
         const event = req.body;
@@ -32,6 +33,12 @@ async function run() {
       })
       .get("/events", async (req, res) => {
         const result = await eventCollection.find({}).toArray();
+        res.send(result);
+      })
+      .get("/events/:id", async (req, res) => {
+        const result = await eventCollection.findOne({
+          _id: ObjectId(req.params.id),
+        });
         res.send(result);
       });
   } finally {
