@@ -87,7 +87,7 @@ async function run() {
         res.send(result);
       });
 
-    //post user , get users ,get particular user by emailId, replace firebase google signIn or github signIn userInfo , role play updating for admin
+    //post user , get users ,get particular user by emailId, replace firebase google signIn or github signIn userInfo , role play updating for admin , get admin by emailId
     app
       .post("/users", async (req, res) => {
         const user = req.body;
@@ -119,6 +119,14 @@ async function run() {
           { upsert: true }
         );
         res.send(result);
+      })
+      .get("/users/admin/:emailId", async (req, res) => {
+        const result = await userCollection.findOne({
+          email: req.params.emailId,
+          role: "admin",
+        });
+        if (result) res.send({ admin: true });
+        else res.send({ admin: false });
       });
   } finally {
     // await client.close();
