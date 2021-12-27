@@ -24,7 +24,7 @@ async function run() {
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
 
-    //post an event , get events , get particular event by id, delete particular event by id
+    //post an event , get events , get particular event by id, delete particular event by id ,update particular event by id
     app
       .post("/events", async (req, res) => {
         const event = req.body;
@@ -46,6 +46,19 @@ async function run() {
           _id: ObjectId(req.params.id),
         });
         res.send(result);
+      })
+      .patch("/events/:id", async (req, res) => {
+        const exist = await eventCollection.findOne({
+          _id: ObjectId(req.params.id),
+        });
+
+        if (exist) {
+          const result = await eventCollection.updateOne(
+            { _id: ObjectId(req.params.id) },
+            { $set: req.body }
+          );
+          res.send(result);
+        } else res.status(404).send("Event not found!");
       });
   } finally {
     // await client.close();
