@@ -1,4 +1,4 @@
-## Volunteer Network
+# Volunteer Network
 
 ## Project Details
 
