@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
 const { ObjectId } = require("mongodb");
+const admin = require("firebase-admin");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -17,6 +18,24 @@ const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const verifyToken = async (req, res, next) => {
+  if (req.headers?.authorization?.startsWith("Bearer ")) {
+    const idToken = req.headers?.authorization.split("Bearer ")[1];
+    try {
+      const decodedUser = await admin.auth().verifyIdToken(idToken);
+      req.decodedEmail = decodedUser.email;
+    } catch (error) {
+      error && res.status(401).json({ message: "UnAuthorized" });
+    }
+  }
+  next();
+};
 
 async function run() {
   try {
@@ -74,11 +93,18 @@ async function run() {
         const result = await registeredCollection.find({}).toArray();
         res.send(result);
       })
-      .get("/registeredInfo/:emailId", async (req, res) => {
-        const result = await registeredCollection.findOne({
-          email: req.params.emailId,
-        });
-        res.send(result);
+      .get("/registeredInfo/:emailId", verifyToken, async (req, res) => {
+        if (req.decodedEmail === req.params.emailId) {
+          const result = await registeredCollection
+            .find({
+              email: req.params.emailId,
+            })
+            .toArray();
+          res.send(result);
+        } else
+          res.status(403).send({
+            message: "Sorry, it's not allowed to go beyond this point!",
+          });
       })
       .delete("/registeredInfo/:id", async (req, res) => {
         const result = await registeredCollection.deleteOne({
@@ -124,13 +150,24 @@ async function run() {
         );
         res.send(result);
       })
-      .put("/users/admin", async (req, res) => {
-        const result = await userCollection.updateOne(
-          { email: req.body.email },
-          { $set: { role: "admin" } },
-          { upsert: true }
-        );
-        res.send(result);
+      .put("/users/admin", verifyToken, async (req, res) => {
+        const requester = req.decodedEmail;
+        if (requester) {
+          const requesterAccount = await userCollection.findOne({
+            email: requester,
+          });
+          if (requesterAccount.role === "admin") {
+            const result = await userCollection.updateOne(
+              { email: req.body.email },
+              { $set: { role: "admin" } },
+              { upsert: true }
+            );
+            res.send(result);
+          } else
+            res.status(403).send({
+              message: "Sorry, it's not allowed to go beyond this point!",
+            });
+        }
       })
       .get("/users/admin/:emailId", async (req, res) => {
         const result = await userCollection.findOne({
