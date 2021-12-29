@@ -63,7 +63,7 @@ async function run() {
         } else res.status(404).send("Event not found!");
       });
 
-    //post registration info , get all registration info, get particular registration info by emailId, delete particular registration by id
+    //post registration info , get all registration info, get particular registration info by emailId, delete particular registration by id, update status by id
     app
       .post("/registeredInfo", async (req, res) => {
         const registeredInfo = req.body;
@@ -85,6 +85,18 @@ async function run() {
           _id: ObjectId(req.params.id),
         });
         res.send(result);
+      })
+      .patch("/registeredInfo/:id", async (req, res) => {
+        const exist = await registeredCollection.findOne({
+          _id: ObjectId(req.params.id),
+        });
+        if (exist) {
+          const result = await registeredCollection.updateOne(
+            { _id: ObjectId(req.params.id) },
+            { $set: req.body }
+          );
+          res.send(result);
+        } else res.status(404).send("Registration not found");
       });
 
     //post user , get users ,get particular user by emailId, replace firebase google signIn or github signIn userInfo , role play updating for admin , get admin by emailId
