@@ -7,6 +7,17 @@ const admin = require("firebase-admin");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
+//firebase admin initialization
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectType: process.env.FIREBASE_PROJECT_TYPE,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    clientId: process.env.FIREBASE_CLIENT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  }),
+});
+
 //middleware
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
@@ -17,11 +28,6 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
-
-const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
 });
 
 const verifyToken = async (req, res, next) => {
